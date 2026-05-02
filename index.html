@@ -1,0 +1,374 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#f5f4f0;color:#1a1a18;min-height:100vh}
+:root{--primary:#1a3c5e;--success:#2d7a4f;--warning:#b87d1a;--muted:#6b6b66;--border:#d8d6cf;--surface:#fff;--light:#f5f4f0}
+.app{display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--primary);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between}
+.topbar-title{font-size:15px;font-weight:600}
+.topbar-sub{font-size:12px;opacity:.65;margin-top:2px}
+.nav{display:flex;gap:4px;background:rgba(255,255,255,.1);border-radius:8px;padding:4px}
+.nav button{background:none;border:none;color:rgba(255,255,255,.7);font-family:inherit;font-size:12px;font-weight:500;padding:6px 12px;border-radius:6px;cursor:pointer;transition:.15s}
+.nav button.active{background:#fff;color:var(--primary)}
+.content{flex:1;padding:20px;max-width:900px;margin:0 auto;width:100%}
+.card{background:var(--surface);border-radius:12px;border:1px solid var(--border);padding:20px;margin-bottom:16px}
+.card-title{font-size:14px;font-weight:600;color:var(--primary);margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+label{font-size:12px;font-weight:500;color:var(--muted)}
+input,select,textarea{font-family:inherit;font-size:13px;padding:9px 12px;border:1px solid var(--border);border-radius:7px;background:#fafaf8;color:#1a1a18;outline:none;transition:.15s;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--primary);background:#fff}
+textarea{resize:vertical;min-height:70px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border:none;border-radius:8px;font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:.15s}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:#1e4a73}
+.btn-sm{padding:5px 12px;font-size:12px;border-radius:6px}
+.btn-success{background:var(--success);color:#fff}
+.btn-warning{background:var(--warning);color:#fff}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn-ghost:hover{background:var(--light)}
+.badge{display:inline-flex;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-open{background:#fef3e2;color:#b87d1a}
+.badge-progress{background:#e3f0ff;color:#185fa5}
+.badge-closed{background:#e6f4ed;color:#2d7a4f}
+.complaint-card{background:var(--surface);border-radius:10px;border:1px solid var(--border);padding:14px 16px;margin-bottom:10px}
+.c-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.c-meta{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+.c-meta span{font-size:11px;color:var(--muted)}
+.c-id{font-family:'DM Mono',monospace;font-size:11px;color:var(--muted);margin-top:4px}
+.c-desc{font-size:13px;color:#444;margin-top:6px;line-height:1.5}
+.c-remark{font-size:12px;background:#f5f4f0;border-left:3px solid var(--border);padding:6px 10px;margin-top:8px;color:var(--muted)}
+.admin-actions{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);flex-wrap:wrap;align-items:center}
+.remark-input{flex:1;min-width:140px;font-size:12px;padding:6px 10px}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.stat-num{font-size:26px;font-weight:600}
+.stat-label{font-size:11px;color:var(--muted);margin-top:2px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.filter-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:#fff;font-family:inherit;font-size:12px;cursor:pointer;color:var(--muted)}
+.filter-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.toast{position:fixed;bottom:20px;right:20px;background:#1a3c5e;color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;z-index:999;opacity:0;transition:.3s;pointer-events:none}
+.toast.show{opacity:1}
+.empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:13px}
+.pin-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:200}
+.pin-box{background:#fff;border-radius:14px;padding:28px 24px;width:290px;text-align:center}
+.pin-box h3{font-size:15px;font-weight:600;color:var(--primary);margin-bottom:6px}
+.pin-box p{font-size:12px;color:var(--muted);margin-bottom:20px}
+.pin-dots{display:flex;justify-content:center;gap:14px;margin-bottom:20px}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);background:transparent;transition:.15s}
+.pin-dot.filled{background:var(--primary);border-color:var(--primary)}
+.pin-keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.pin-key{padding:13px;border:1px solid var(--border);border-radius:8px;background:#fafaf8;font-family:inherit;font-size:16px;font-weight:500;cursor:pointer;color:#1a1a18;transition:.1s}
+.pin-key:hover{background:#f0eeea}
+.pin-key:active{transform:scale(.96)}
+.pin-key.action{font-size:12px;color:var(--muted)}
+.pin-err{color:#c0392b;font-size:12px;min-height:18px;margin-bottom:8px}
+.pin-cancel{font-size:12px;color:var(--muted);background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 8px;margin-top:2px}
+@media(max-width:580px){.form-grid{grid-template-columns:1fr}.nav button{font-size:11px;padding:5px 8px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Society Complaint Portal</div>
+      <div class="topbar-sub">Resident Services Management</div>
+    </div>
+    <nav class="nav">
+      <button id="nav-submit" class="active" onclick="switchView('submit')">Submit</button>
+      <button id="nav-track" onclick="switchView('track')">Track</button>
+      <button id="nav-admin" onclick="switchView('admin')">Admin</button>
+    </nav>
+  </div>
+
+  <div class="content" id="view-submit">
+    <div class="card" style="margin-top:4px">
+      <div class="card-title">Lodge a New Complaint</div>
+      <div class="form-grid">
+        <div class="form-group"><label>Flat No. *</label><input id="f-flat" type="text" placeholder="e.g. A-204" maxlength="10"></div>
+        <div class="form-group"><label>Resident Name *</label><input id="f-name" type="text" placeholder="Full name"></div>
+        <div class="form-group"><label>Mobile No. *</label><input id="f-mobile" type="tel" placeholder="10-digit number" maxlength="10"></div>
+        <div class="form-group"><label>Date *</label><input id="f-date" type="date"></div>
+        <div class="form-group full"><label>Category *</label>
+          <select id="f-cat">
+            <option value="">— Select category —</option>
+            <option>Plumbing</option><option>Electrical</option><option>Housekeeping</option>
+            <option>Garbage Disposal</option><option>Security Guard</option><option>Entry / Exit</option>
+            <option>Club House</option><option>Meter Recharge</option><option>Intercom</option>
+            <option>Common Area</option><option>Others</option>
+          </select>
+        </div>
+        <div class="form-group full"><label>Complaint Details *</label><textarea id="f-desc" placeholder="Describe your complaint clearly…"></textarea></div>
+      </div>
+      <div style="margin-top:16px;display:flex;justify-content:flex-end">
+        <button class="btn btn-primary" onclick="submitComplaint()">Submit Complaint</button>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);text-align:center">Your complaint ID will be shown after submission. Use it to track status.</div>
+  </div>
+
+  <div class="content" id="view-track" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:14px;font-weight:600;color:var(--primary)">Complaints Dashboard</div>
+      <button class="btn btn-ghost btn-sm" onclick="loadComplaints();renderTrack()">Refresh</button>
+    </div>
+    <div class="stats-row" id="track-stats"></div>
+    <div class="filters" id="track-filters"></div>
+    <div id="track-list"></div>
+  </div>
+
+  <div class="content" id="view-admin" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:14px;font-weight:600;color:var(--primary)">Admin Panel</div>
+      <button class="btn btn-ghost btn-sm" onclick="loadComplaints();renderAdmin()">Refresh</button>
+    </div>
+    <div class="stats-row" id="admin-stats"></div>
+    <div class="filters" id="admin-filters"></div>
+    <div id="admin-list"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="pin-overlay" id="pin-modal" style="display:none">
+  <div class="pin-box">
+    <h3>Admin Access</h3>
+    <p>Enter your 4-digit PIN to continue</p>
+    <div class="pin-dots">
+      <div class="pin-dot" id="d0"></div>
+      <div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div>
+      <div class="pin-dot" id="d3"></div>
+    </div>
+    <div class="pin-keypad">
+      <button class="pin-key" onclick="pinPress('1')">1</button>
+      <button class="pin-key" onclick="pinPress('2')">2</button>
+      <button class="pin-key" onclick="pinPress('3')">3</button>
+      <button class="pin-key" onclick="pinPress('4')">4</button>
+      <button class="pin-key" onclick="pinPress('5')">5</button>
+      <button class="pin-key" onclick="pinPress('6')">6</button>
+      <button class="pin-key" onclick="pinPress('7')">7</button>
+      <button class="pin-key" onclick="pinPress('8')">8</button>
+      <button class="pin-key" onclick="pinPress('9')">9</button>
+      <button class="pin-key action" onclick="pinClear()">Clear</button>
+      <button class="pin-key" onclick="pinPress('0')">0</button>
+      <button class="pin-key action" onclick="pinBack()">&#9003;</button>
+    </div>
+    <div class="pin-err" id="pin-err"></div>
+    <button class="pin-cancel" onclick="cancelPin()">Cancel</button>
+  </div>
+</div>
+
+<script>
+var STORAGE_KEY = 'society_complaints_v2';
+var ADMIN_PIN = '1234';
+var complaints = [];
+var trackFilter = 'All';
+var adminFilter = 'All';
+var adminAuthed = false;
+var pinEntry = '';
+
+function loadComplaints() {
+  try { var r = localStorage.getItem(STORAGE_KEY); complaints = r ? JSON.parse(r) : []; }
+  catch(e) { complaints = []; }
+}
+
+function saveComplaints() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(complaints));
+}
+
+function genId() {
+  return 'CMP-' + Date.now().toString(36).toUpperCase().slice(-6);
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function() { t.classList.remove('show'); }, 2800);
+}
+
+function switchView(v) {
+  if (v === 'admin' && !adminAuthed) { openPin(); return; }
+  var views = ['submit','track','admin'];
+  views.forEach(function(x) {
+    document.getElementById('view-' + x).style.display = (x === v) ? '' : 'none';
+    document.getElementById('nav-' + x).classList.toggle('active', x === v);
+  });
+  if (v === 'track') { loadComplaints(); renderTrack(); }
+  if (v === 'admin') { loadComplaints(); renderAdmin(); }
+}
+
+function openPin() {
+  pinEntry = '';
+  document.getElementById('pin-err').textContent = '';
+  updateDots();
+  document.getElementById('pin-modal').style.display = 'flex';
+}
+
+function cancelPin() {
+  document.getElementById('pin-modal').style.display = 'none';
+}
+
+function updateDots() {
+  for (var i = 0; i < 4; i++) {
+    document.getElementById('d' + i).classList.toggle('filled', i < pinEntry.length);
+  }
+}
+
+function pinPress(d) {
+  if (pinEntry.length >= 4) return;
+  document.getElementById('pin-err').textContent = '';
+  pinEntry += d;
+  updateDots();
+  if (pinEntry.length === 4) {
+    setTimeout(function() {
+      if (pinEntry === ADMIN_PIN) {
+        adminAuthed = true;
+        document.getElementById('pin-modal').style.display = 'none';
+        switchView('admin');
+      } else {
+        document.getElementById('pin-err').textContent = 'Incorrect PIN. Please try again.';
+        pinEntry = '';
+        updateDots();
+      }
+    }, 200);
+  }
+}
+
+function pinBack() {
+  if (pinEntry.length > 0) { pinEntry = pinEntry.slice(0, -1); updateDots(); }
+  document.getElementById('pin-err').textContent = '';
+}
+
+function pinClear() {
+  pinEntry = '';
+  updateDots();
+  document.getElementById('pin-err').textContent = '';
+}
+
+function submitComplaint() {
+  var flat = document.getElementById('f-flat').value.trim();
+  var name = document.getElementById('f-name').value.trim();
+  var mobile = document.getElementById('f-mobile').value.trim();
+  var date = document.getElementById('f-date').value;
+  var cat = document.getElementById('f-cat').value;
+  var desc = document.getElementById('f-desc').value.trim();
+  if (!flat || !name || !mobile || !date || !cat || !desc) { showToast('Please fill all required fields.'); return; }
+  if (!/^\d{10}$/.test(mobile)) { showToast('Enter a valid 10-digit mobile number.'); return; }
+  loadComplaints();
+  var c = { id: genId(), flat: flat, name: name, mobile: mobile, date: date, category: cat, description: desc, status: 'Open', remark: '', createdAt: new Date().toISOString() };
+  complaints.unshift(c);
+  saveComplaints();
+  showToast('Complaint submitted! ID: ' + c.id);
+  ['f-flat','f-name','f-mobile','f-date','f-desc'].forEach(function(id) { document.getElementById(id).value = ''; });
+  document.getElementById('f-cat').value = '';
+  showConfirm(c.id);
+}
+
+function showConfirm(id) {
+  var old = document.getElementById('confirm-box');
+  if (old) old.remove();
+  var d = document.createElement('div');
+  d.id = 'confirm-box';
+  d.style.cssText = 'margin-top:12px;background:#e6f4ed;border-radius:10px;padding:14px 16px;border:1px solid #a8d8bb;display:flex;align-items:center;gap:12px';
+  d.innerHTML = '<div style="font-size:20px;color:#2d7a4f">&#10003;</div><div><div style="font-size:13px;font-weight:600;color:#2d7a4f">Complaint Registered Successfully</div><div style="font-size:12px;color:#2d7a4f;margin-top:2px">Tracking ID: <b style="font-family:DM Mono,monospace">' + id + '</b> — Save this for future reference.</div></div>';
+  var card = document.querySelector('#view-submit .card');
+  card.after(d);
+  setTimeout(function() { if (d.parentNode) d.remove(); }, 8000);
+}
+
+function statusBadge(s) {
+  var cls = s === 'Open' ? 'badge-open' : s === 'In Progress' ? 'badge-progress' : 'badge-closed';
+  return '<span class="badge ' + cls + '">' + s + '</span>';
+}
+
+var catIcons = { 'Plumbing':'🔧','Electrical':'⚡','Housekeeping':'🧹','Garbage Disposal':'🗑️','Security Guard':'🛡️','Entry / Exit':'🚪','Club House':'🏛️','Meter Recharge':'⚡','Intercom':'📞','Common Area':'🌳','Others':'📋' };
+function catIcon(c) { return catIcons[c] || '📋'; }
+
+function formatDate(d) {
+  if (!d) return '';
+  return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+function renderStats(list, id) {
+  var o = list.filter(function(c){return c.status==='Open';}).length;
+  var p = list.filter(function(c){return c.status==='In Progress';}).length;
+  var cl = list.filter(function(c){return c.status==='Closed';}).length;
+  document.getElementById(id).innerHTML =
+    '<div class="stat-card"><div class="stat-num" style="color:#b87d1a">' + o + '</div><div class="stat-label">Open</div></div>' +
+    '<div class="stat-card"><div class="stat-num" style="color:#185fa5">' + p + '</div><div class="stat-label">In Progress</div></div>' +
+    '<div class="stat-card"><div class="stat-num" style="color:#2d7a4f">' + cl + '</div><div class="stat-label">Closed</div></div>';
+}
+
+function renderFilters(filterId, active, fn) {
+  var statuses = ['All','Open','In Progress','Closed'];
+  document.getElementById(filterId).innerHTML = statuses.map(function(s) {
+    return '<button class="filter-btn' + (s === active ? ' active' : '') + '" onclick="' + fn + '(\'' + s + '\')">' + s + '</button>';
+  }).join('');
+}
+
+function renderTrack() {
+  renderStats(complaints, 'track-stats');
+  renderFilters('track-filters', trackFilter, 'setTrackFilter');
+  var list = trackFilter === 'All' ? complaints : complaints.filter(function(c){return c.status===trackFilter;});
+  var el = document.getElementById('track-list');
+  if (!list.length) { el.innerHTML = '<div class="empty">No complaints found.</div>'; return; }
+  el.innerHTML = list.map(function(c) {
+    return '<div class="complaint-card">' +
+      '<div class="c-header"><div><span>' + catIcon(c.category) + '</span><span style="font-size:13px;font-weight:600;margin-left:6px">' + c.category + '</span></div>' + statusBadge(c.status) + '</div>' +
+      '<div class="c-desc">' + c.description + '</div>' +
+      '<div class="c-meta"><span>🏠 ' + c.flat + '</span><span>👤 ' + c.name + '</span><span>📅 ' + formatDate(c.date) + '</span></div>' +
+      (c.remark ? '<div class="c-remark">Admin note: ' + c.remark + '</div>' : '') +
+      '<div class="c-id">' + c.id + '</div></div>';
+  }).join('');
+}
+
+function renderAdmin() {
+  renderStats(complaints, 'admin-stats');
+  renderFilters('admin-filters', adminFilter, 'setAdminFilter');
+  var list = adminFilter === 'All' ? complaints : complaints.filter(function(c){return c.status===adminFilter;});
+  var el = document.getElementById('admin-list');
+  if (!list.length) { el.innerHTML = '<div class="empty">No complaints found.</div>'; return; }
+  el.innerHTML = list.map(function(c) {
+    return '<div class="complaint-card">' +
+      '<div class="c-header"><div><span>' + catIcon(c.category) + '</span><span style="font-size:13px;font-weight:600;margin-left:6px">' + c.category + '</span></div>' + statusBadge(c.status) + '</div>' +
+      '<div class="c-desc">' + c.description + '</div>' +
+      '<div class="c-meta"><span>🏠 <b>' + c.flat + '</b></span><span>👤 ' + c.name + '</span><span>📞 ' + c.mobile + '</span><span>📅 ' + formatDate(c.date) + '</span></div>' +
+      (c.remark ? '<div class="c-remark">Remark: ' + c.remark + '</div>' : '') +
+      '<div class="admin-actions">' +
+        '<input class="remark-input" id="rmk-' + c.id + '" type="text" placeholder="Add remark…" value="' + (c.remark||'') + '">' +
+        '<button class="btn btn-sm btn-warning" onclick="updateStatus(\'' + c.id + '\',\'In Progress\')">In Progress</button>' +
+        '<button class="btn btn-sm btn-success" onclick="updateStatus(\'' + c.id + '\',\'Closed\')">Close</button>' +
+        (c.status !== 'Open' ? '<button class="btn btn-sm btn-ghost" onclick="updateStatus(\'' + c.id + '\',\'Open\')">Reopen</button>' : '') +
+      '</div>' +
+      '<div class="c-id">' + c.id + ' · Submitted ' + formatDate(c.createdAt) + '</div></div>';
+  }).join('');
+}
+
+function setTrackFilter(s) { trackFilter = s; renderTrack(); }
+function setAdminFilter(s) { adminFilter = s; renderAdmin(); }
+
+function updateStatus(id, status) {
+  loadComplaints();
+  var idx = complaints.findIndex(function(c){return c.id===id;});
+  if (idx < 0) return;
+  var rmk = document.getElementById('rmk-' + id);
+  complaints[idx].status = status;
+  if (rmk) complaints[idx].remark = rmk.value.trim();
+  saveComplaints();
+  showToast('Status updated to "' + status + '"');
+  renderAdmin();
+}
+
+document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+loadComplaints();
+</script>
+</body>
+</html>
